@@ -113,12 +113,25 @@ void set_daemon(void) {
 }
 
 void usage(void) {
-    printf("Usage: radioclkd2 [ -s poll|iwait|timepps|gpio|gpio_char ] [ -t dcf77|msf|wwvb ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
+    printf("Usage: radioclkd2 [ -s poll|"
+           #ifdef ENABLE_TIOCMIWAIT
+           "iwait|"
+           #endif // ENABLE_TIOCMIWAIT
+           #ifdef ENABLE_TIMEPPS
+           "timepps|"
+           #endif // ENABLE_TIMEPPS
+           #ifdef ENABLE_GPIO
+           "gpio|"
+           #endif // ENABLE_GPIO
+           #ifdef ENABLE_GPIO_CHARDEV
+           "gpio_char"
+           #endif // ENABLE_GPIO_CHARDEV
+           " ] [ -t dcf77|msf|wwvb ] [ -d ] [ -v ] tty[:[-]line[:fudgeoffs]] ...\n"
            "   -s poll: poll the serial port 1000 times/sec (poor)\n"
            #ifdef ENABLE_TIOCMIWAIT
            "   -s iwait: wait for serial port interrupts (ok)\n"
            #else // !ENABLE_TIOCMIWAIT
-           "  (iwait not available)\n"
+           "  (iwait support is not available in this build)\n"
            #endif // !ENABLE_TIOCMIWAIT
            #ifdef ENABLE_TIMEPPS
            "   -s timepps: use the timepps interface (good)\n"
