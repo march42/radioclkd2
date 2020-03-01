@@ -22,10 +22,7 @@
 
 #include "config.h"
 
-
 #include "settings.h"
-
-
 
 int verboseLevel = 0;
 int debugLevel = 0;

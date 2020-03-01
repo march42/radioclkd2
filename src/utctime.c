@@ -26,30 +26,22 @@
 
 #include "utctime.h"
 
+time_t UTCtime(struct tm* timeptr) {
+    #if defined(HAVE_TIMEGM)
+    return timegm ( timeptr );
+    #else // !defined(HAVE_TIMEGM)
+        #if defined(HAVE_TZSET) && defined(HAVE_SETENV)
+    static int donetzset = 0;
 
+    if ( !donetzset )
+    {
+        setenv ( "TZ", "", 1 );
+        tzset();
+        donetzset++;
+    }
+        #endif // defined(HAVE_TZSET) && defined(HAVE_SETENV)
 
-time_t
-UTCtime(struct tm *timeptr)
-{
-#if defined HAVE_TIMEGM
-	return timegm ( timeptr );
-#else
-
-# if HAVE_TZSET && HAVE_SETENV
-	static int donetzset = 0;
-
-	if ( !donetzset )
-	{
-		setenv ( "TZ", "", 1 );
-		tzset();
-		donetzset++;
-	}
-# endif
-
-	return mktime ( timeptr );
-
-#endif
-
-
+    return mktime(timeptr);
+    #endif // !defined(HAVE_TIMEGM)
 }
 

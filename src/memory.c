@@ -22,74 +22,46 @@
 
 #include "config.h"
 
-
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
-#include <syslog.h>
 
+#include "memory.h"
+#include "logger.h"
 
+void* safe_mallocz(size_t size) {
+    void* ptr;
 
-static FILE*	logf_file;
-static int	logf_file_level;
-
-static int	logf_syslog = 0;
-static int	logf_syslog_level;
-
-void
-loggerSetFile ( FILE* file, int level )
-{
-	logf_file = file;
-	logf_file_level = level;
+    ptr = malloc(size);
+    if (ptr == NULL) {
+        loggerf(LOGGER_NOTE, "Error: malloc() failed\n");
+        exit(1);
+    }
+    memset(ptr, 0, size);
+    return ptr;
 }
 
-void
-loggerSyslog ( int flag, int level )
-{
-	logf_syslog = flag;
-	logf_syslog_level = level;
+void safe_free(void* ptr) {
+    if (ptr) {
+        free(ptr);
+    }
 }
 
-void
-loggerf ( int level, char* format, ... )
-{
-	char	buf[512];
-	va_list	ap;
-	static char	syslogline[512];
+char* safe_xstrcpy(char* str, int len) {
+    char* ret;
 
+    if (len < 0) {
+        len = strlen(str);
+    }
 
-	if ( format )
-	{
-		va_start ( ap, format );
-		vsnprintf ( buf, sizeof(buf), format, ap );
-		va_end ( ap );
+    ret = malloc(len + 1);
+    if (ret == NULL) {
+        loggerf(LOGGER_NOTE, "Error: malloc() failed in safe_xstrcpy()\n");
+        exit(1);
+    }
 
-		if ( logf_file && level <= logf_file_level )
-		{
-			fprintf ( logf_file, "%s", buf );
-			fflush ( logf_file );
-		}
+    memcpy(ret, str, len);
+    ret[len] = 0;
 
-		if ( logf_syslog && level <= logf_syslog_level )
-		{
-			//some (all?) syslog()s output strings without '\n' in them as a line anyway - so buffer it here...
-
-			//if we have a lot, send it out anyway...
-			if ( strlen(syslogline)+strlen(buf) >= sizeof(syslogline) )
-			{
-				syslog ( LOG_NOTICE, "%s", syslogline );
-				syslogline[0] = 0;
-			}
-
-			strcat ( syslogline, buf );
-
-			if ( syslogline[0] != 0 && syslogline[strlen(syslogline)-1] == '\n' )
-			{
-				syslog ( LOG_NOTICE, "%s", syslogline );
-				syslogline[0] = 0;
-			}
-
-		}
-	}
+    return ret;
 }

@@ -9,5 +9,4 @@ extern int verboseLevel;
 
 extern int debugLevel;
 
-
 #endif

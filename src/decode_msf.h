@@ -3,7 +3,6 @@
 
 #include "clock.h"
 
-
-int msfDecode ( clkInfoT* clock, time_f minstart );
+int msf_decode(clkInfoT* clock, time_f minstart);
 
 #endif

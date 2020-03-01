@@ -3,7 +3,6 @@
 
 #include "clock.h"
 
-
-int wwvbDecode ( clkInfoT* clock, time_f minstart );
+int wwvb_decode(clkInfoT* clock, time_f minstart);
 
 #endif
