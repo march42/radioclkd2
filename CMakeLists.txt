@@ -31,20 +31,37 @@ add_executable(radioclkd2
         src/serial.h src/timef.h src/clock.h src/shm.h src/settings.h
         src/utctime.h src/decode_msf.h src/decode_dcf77.h src/decode_wwvb.h)
 
+# For debugging
 add_definitions(-g3)
 add_definitions(-ggdb)
+add_definitions(-fno-omit-frame-pointer)
+
+# Enable optimizations
 add_definitions(-O3)
-add_definitions(-fPIE)
 add_definitions(-march=native)
 add_definitions(-mtune=native)
+
+# Enable warnings
 add_definitions(-Wall)
-add_definitions(-fno-omit-frame-pointer)
+add_definitions(-Wextra)
+add_definitions(-Weffc++)
+add_definitions(-Wconversion)
+add_definitions(-Wsign-conversion)
+add_definitions(-Woverloaded-virtual)
+add_definitions(-Winit-self)
+add_definitions(-Wparentheses)
+add_definitions(-Wpointer-arith)
+
+# Safety
+add_definitions(-fPIE)
 add_definitions(-fstack-protector-all)
 add_definitions(-fstack-clash-protection)
+
+# Sanitizers
 #add_definitions(-fsanitize=address)
 #add_definitions(-fsanitize=thread)
-
 #target_link_libraries(radioclkd2 asan)
 #target_link_libraries(radioclkd2 tsan)
-target_link_libraries(radioclkd2 m) # Include math
+
+target_link_libraries(radioclkd2 m)
 target_link_libraries(radioclkd2 gpiod)

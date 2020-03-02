@@ -42,8 +42,8 @@ struct serDevS {
     int fd;
     #ifdef ENABLE_TIMEPPS
     pps_handle_t ppshandle;
-    int ppslastassert;
-    int ppslastclear;
+    unsigned long ppslastassert;
+    unsigned long ppslastclear;
     #endif // ENABLE_TIMEPPS
 
     #ifdef ENABLE_GPIO_CHARDEV
@@ -65,7 +65,7 @@ struct serLineS {
     serLineT* next;
 
     //one of TIOCM_{RNG|DSR|CD|CTS}
-    int line;
+    unsigned int line;
     serDevT* dev;
 
     int curstate;

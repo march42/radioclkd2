@@ -137,7 +137,7 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
                     strcpy(serdev->chipname, subs);
                     loggerf(LOGGER_INFO, "Using chip \"%s\"\n", subs);
                 } else if (isdigit(subs[0])) {
-                    serdev->pin_number = atoi(subs);
+                    serdev->pin_number = (uint_fast8_t) atoi(subs);
                     loggerf(LOGGER_INFO, "Using pin \"%s\"\n", subs);
                 } else {
                     loggerf(LOGGER_INFO, "Can't parse this format\n");
@@ -297,7 +297,7 @@ int ser_init_hardware(serDevT* dev) {
 //static jmp_buf alrmjump;
 
 #ifdef ENABLE_TIOCMIWAIT
-static void sigalrm(int _ignore) {
+static void sigalrm(int unused) {
     //empty func - just used so that ioctl() aborts on an alarm()
 }
 #endif
@@ -373,7 +373,7 @@ int ser_wait_for_serial_change(serDevT* dev) {
                 return -1;
             }
 
-            uint_fast8_t return_code = gpiod_line_event_wait(dev->gpiod_line, &timeout_length);
+            uint_fast8_t return_code = (uint_fast8_t) gpiod_line_event_wait(dev->gpiod_line, &timeout_length);
             if (return_code < 0) {
                 loggerf(LOGGER_NOTE, "GPIOD: Event notification failed (err: %d)\n", return_code);
                 return -1;
@@ -482,7 +482,7 @@ int ser_get_dev_status_lines(serDevT* dev, time_f timef) {
         #endif // !defined(ENABLE_GPIO)
     if (dev->mode == SERPORT_MODE_GPIO_CHAR) {
         // Read the GPIO pin
-        uint_fast8_t return_code = gpiod_line_event_read(dev->gpiod_line, dev->event);
+        uint_fast8_t return_code = (uint_fast8_t) gpiod_line_event_read(dev->gpiod_line, dev->event);
         loggerf(LOGGER_NOTE, "Get event notification on line #%u\n", dev->pin_number);
         if (return_code < 0) {
             loggerf(LOGGER_NOTE, "Read last event notification failed\n");
@@ -533,7 +533,7 @@ int ser_update_lines_for_device(serDevT* dev) {
     serLineT* line;
 
     for (line = ser_get_line(NULL); line != NULL; line = ser_get_line(line)) {
-        //skip lines not on this device...
+        // Skip lines not on this device...
         if (line->dev != dev) {
             continue;
         }

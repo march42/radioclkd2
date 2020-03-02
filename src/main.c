@@ -72,20 +72,20 @@ void set_real_time(void) {
     #endif
 
     #ifdef ENABLE_SCHED
-    /* set realtime scheduling priority */
+    /** Set realtime scheduling priority */
     memset(&schedp, 0, sizeof(schedp));
     schedp.sched_priority = sched_get_priority_max(SCHED_FIFO);
     if (sched_setscheduler(0, SCHED_FIFO, &schedp) != 0) {
-        loggerf(LOGGER_INFO, "error unable to set real time scheduling");
+        loggerf(LOGGER_INFO, "Error, unable to set real time scheduling");
     }
     #else
     nice ( -20 );
     #endif
 
     #ifdef ENABLE_MLOCKALL
-    /* lock all memory pages */
+    /** Lock all memory pages */
     if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
-        loggerf(LOGGER_INFO, "error unable to lock memory pages");
+        loggerf(LOGGER_INFO, "Error, unable to lock memory pages");
     }
     #endif
 
@@ -277,21 +277,16 @@ int main(int argc, char** argv) {
             }
         } else {
             //arg = "tty[:[-]line]"
-            char* dev;
-            int line;
-            int negate;
-            char* linestr;
             char* fudgestr;
             serLineT* serline;
             clkInfoT* clock;
-            time_f fudgeoffset;
 
-            negate = 0;
-            fudgeoffset = 0.0;
-            line = TIOCM_CD;
+            int negate = 0;
+            time_f fudgeoffset = 0.0;
+            unsigned int line = TIOCM_CD;
 
-            dev = safe_xstrcpy(arg, -1);
-            linestr = strchr(dev, ':');
+            char* dev = safe_xstrcpy(arg, -1);
+            char* linestr = strchr(dev, ':');
             if (linestr != NULL) {
 
                 //tty:
@@ -440,7 +435,7 @@ void start_clocks(serDevT* serdev) {
     }
 
     while (1) {
-        uint_fast8_t return_code = ser_wait_for_serial_change(serdev);
+        int return_code = ser_wait_for_serial_change(serdev);
         if (return_code == 0) {
             loggerf(LOGGER_DEBUG, "No serial line change\n");
             continue;
