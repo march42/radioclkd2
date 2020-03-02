@@ -436,10 +436,10 @@ void start_clocks(serDevT* serdev) {
 
     while (1) {
         int return_code = ser_wait_for_serial_change(serdev);
-        if (return_code == 0) {
+        if (return_code == -1) {
             loggerf(LOGGER_DEBUG, "No serial line change\n");
             continue;
-        } else if (return_code < 0) {
+        } else if (return_code == -2) {
             loggerf(LOGGER_DEBUG, "Error waiting for change\n");
             return;
         }

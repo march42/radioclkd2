@@ -376,7 +376,7 @@ int ser_wait_for_serial_change(serDevT* dev) {
             uint_fast8_t return_code = (uint_fast8_t) gpiod_line_event_wait(dev->gpiod_line, &timeout_length);
             if (return_code < 0) {
                 loggerf(LOGGER_NOTE, "GPIOD: Event notification failed (err: %d)\n", return_code);
-                return -1;
+                return -2;
             } else if (return_code == 0) {
                 loggerf(LOGGER_NOTE, "GPIOD: Timeout (err: 0)\n");
                 return -1;
