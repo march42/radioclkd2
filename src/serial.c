@@ -253,7 +253,7 @@ int ser_open_dev(serDevT* dev) {
         case SERPORT_MODE_GPIO_CHAR: {
             dev->gpiod_chip = gpiod_chip_open_by_name(dev->chipname);
             if (!dev->gpiod_chip) {
-                loggerf(LOGGER_INFO,"Opening chip failed\n");
+                loggerf(LOGGER_INFO,"Opening chip \"%s\" failed\n", dev->chipname);
                 return -1;
             }
 
