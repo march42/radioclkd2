@@ -13,7 +13,7 @@ void logger_syslog(int flag, int level);
 #define    LOGGER_DEBUG    (2)
 #define    LOGGER_TRACE    (3)
 
-void loggerf(int level, char* format, ...);
+void loggerf(int level, char* format, ...) __attribute__ ((format (printf, 2, 3)));
 //(note: loggerf(), rather than logger() to remind me that it's a printf() style function.
 // too many other programs have that kind of mistake in them!)
 
