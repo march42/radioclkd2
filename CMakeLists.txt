@@ -32,6 +32,7 @@ add_executable(radioclkd2
         src/utctime.h src/decode_msf.h src/decode_dcf77.h src/decode_wwvb.h)
 
 add_definitions(-g3)
+add_definitions(-ggdb)
 add_definitions(-O3)
 add_definitions(-fPIE)
 add_definitions(-march=native)
@@ -40,10 +41,10 @@ add_definitions(-Wall)
 add_definitions(-fno-omit-frame-pointer)
 add_definitions(-fstack-protector-all)
 add_definitions(-fstack-clash-protection)
-add_definitions(-fsanitize=address)
+#add_definitions(-fsanitize=address)
 #add_definitions(-fsanitize=thread)
 
-target_link_libraries(radioclkd2 asan)
+#target_link_libraries(radioclkd2 asan)
 #target_link_libraries(radioclkd2 tsan)
 target_link_libraries(radioclkd2 m) # Include math
 target_link_libraries(radioclkd2 gpiod)

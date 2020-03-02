@@ -319,16 +319,6 @@ int ser_wait_for_serial_change(serDevT* dev) {
     /** Array of polled file pointers */
     struct pollfd pollfds[1];
     #endif
-    #ifdef ENABLE_GPIO_CHARDEV
-    /** The chip name to what the GPIO is attached to */
-    char* chipname = NULL;
-    /** */
-    struct gpiod_line_event event;
-    /** */
-    struct gpiod_chip* chip;
-    /** */
-    struct gpiod_line* line;
-    #endif
 
     if (dev->modemlines == 0) {
         return -1;
@@ -378,8 +368,12 @@ int ser_wait_for_serial_change(serDevT* dev) {
             // Register interrupt
             pollfds[0].fd = dev->fd;
             pollfds[0].events = POLLERR;
+            if (dev->gpiod_line == NULL) {
+                loggerf(LOGGER_NOTE, "GPIOD: No line to wait for event\n");
+                return -1;
+            }
 
-            uint_fast8_t return_code = gpiod_line_event_wait(line, &timeout_length);
+            uint_fast8_t return_code = gpiod_line_event_wait(dev->gpiod_line, &timeout_length);
             if (return_code < 0) {
                 loggerf(LOGGER_NOTE, "GPIOD: Event notification failed (err: %d)\n", return_code);
                 return -1;

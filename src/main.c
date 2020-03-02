@@ -64,7 +64,7 @@ typedef struct {
 #define    MAX_CLOCKS        (16)
 serClockT clocklist[MAX_CLOCKS];
 
-_Noreturn void start_clocks(serDevT* serdev);
+void start_clocks(serDevT* serdev);
 
 void set_real_time(void) {
     #ifdef ENABLE_SCHED
@@ -423,14 +423,12 @@ int main(int argc, char** argv) {
 
     loggerf(LOGGER_INFO, "Parent process has been terminated\n");
     exit(1);
-
-    return 0;    //to stop warnings
 }
 
 void start_clocks(serDevT* serdev) {
     serLineT* serline;
     if (serdev == NULL || strlen(serdev->dev) <= 0) {
-        //loggerf(LOGGER_INFO, "The clock input device doesn't exist\n");
+        loggerf(LOGGER_INFO, "The clock input device doesn't exist\n");
         return;
     }
 
@@ -442,9 +440,13 @@ void start_clocks(serDevT* serdev) {
     }
 
     while (1) {
-        if (ser_wait_for_serial_change(serdev) < 0) {
+        uint_fast8_t return_code = ser_wait_for_serial_change(serdev);
+        if (return_code == 0) {
             loggerf(LOGGER_DEBUG, "No serial line change\n");
             continue;
+        } else if (return_code < 0) {
+            loggerf(LOGGER_DEBUG, "Error waiting for change\n");
+            return;
         }
 
         ser_update_lines_for_device(serdev);
