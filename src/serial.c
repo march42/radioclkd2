@@ -482,7 +482,7 @@ int ser_get_dev_status_lines(serDevT* dev, time_f timef) {
         #endif // !defined(ENABLE_GPIO)
     if (dev->mode == SERPORT_MODE_GPIO_CHAR) {
         // Read the GPIO pin
-        uint_fast8_t return_code = (uint_fast8_t) gpiod_line_event_read(dev->gpiod_line, dev->event);
+        int_fast8_t return_code = (int_fast8_t) gpiod_line_event_read(dev->gpiod_line, dev->event);
         loggerf(LOGGER_NOTE, "Get event notification on line #%u\n", dev->pin_number);
         if (return_code < 0) {
             loggerf(LOGGER_NOTE, "Read last event notification failed\n");
