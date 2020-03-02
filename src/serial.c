@@ -263,7 +263,7 @@ int ser_open_dev(serDevT* dev) {
                 return -1;
             }
 
-            if (gpiod_line_request_both_edges_events_flags(dev->gpiod_line, "Consumer", GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW) < 0) {
+            if (gpiod_line_request_both_edges_events_flags(dev->gpiod_line, "radioclkd2_consumer", GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW) < 0) {
                 loggerf(LOGGER_INFO,"Request event notification failed\n");
                 return -1;
             }
@@ -477,11 +477,13 @@ int ser_get_dev_status_lines(serDevT* dev, time_f timef) {
     }
     #endif // ENABLE_GPIO
     #if defined(ENABLE_GPIO_CHARDEV)
-        #if !defined(ENABLE_GPIO) // When GPIO is not enabled we still need the buffer
-    char buf[8];
-        #endif // !defined(ENABLE_GPIO)
     if (dev->mode == SERPORT_MODE_GPIO_CHAR) {
         // Read the GPIO pin
+        if (dev->event != NULL) { // We don't want to reuse the previous event at all
+            free(dev->event);
+        }
+        dev->event = safe_mallocz(sizeof(struct gpiod_line_event));
+
         int_fast8_t return_code = (int_fast8_t) gpiod_line_event_read(dev->gpiod_line, dev->event);
         loggerf(LOGGER_NOTE, "Get event notification on line #%u\n", dev->pin_number);
         if (return_code < 0) {
