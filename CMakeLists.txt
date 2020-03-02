@@ -40,6 +40,7 @@ add_definitions(-fno-omit-frame-pointer)
 add_definitions(-O3)
 add_definitions(-march=native)
 add_definitions(-mtune=native)
+add_definitions(-flto)
 
 # Enable warnings
 add_definitions(-Wall)
