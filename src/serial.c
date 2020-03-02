@@ -96,10 +96,6 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
     }
 
     //try and find an existing device in the list...
-    if (serDevHead == NULL) {
-        serDevHead = safe_mallocz(sizeof(serDevT));
-    }
-
     serdev = serDevHead;
     while (serdev != NULL) {
         if (strcmp(serdev->dev, fulldev) == 0) {
@@ -118,7 +114,8 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
         serdev->modemlines = 0;
         serdev->fd = -1;
         if (serdev->mode == SERPORT_MODE_GPIO_CHAR) {
-            char* tmp = malloc(strlen(serdev->dev) + 1);
+            // Create a temporary string to parse the path
+            char* tmp = safe_xstrcpy(serdev->dev, -1);
             strcpy(tmp, serdev->dev);
             char* subs = strtok(tmp, "/");
             while (subs != NULL) {
@@ -137,10 +134,14 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
                     strcpy(serdev->chipname, subs);
                     loggerf(LOGGER_INFO, "Using chip \"%s\"\n", subs);
                 } else if (isdigit(subs[0])) {
+                    // This is the pin number
                     serdev->pin_number = (uint_fast8_t) atoi(subs);
                     loggerf(LOGGER_INFO, "Using pin \"%s\"\n", subs);
                 } else {
+                    // Unknown path format
                     loggerf(LOGGER_INFO, "Can't parse this format\n");
+                    free(tmp);
+                    tmp = NULL;
                     return NULL;
                 }
                 subs = strtok(NULL, "/");
@@ -148,8 +149,12 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
 
             if (serdev->chipname == NULL) {
                 loggerf(LOGGER_INFO, "Gpiochip was not provided or parsed from the path\n");
+                free(tmp);
+                tmp = NULL;
                 return NULL;
             }
+            free(tmp);
+            tmp = NULL;
         }
     }
 

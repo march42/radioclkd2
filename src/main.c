@@ -285,8 +285,8 @@ int main(int argc, char** argv) {
             time_f fudgeoffset = 0.0;
             unsigned int line = TIOCM_CD;
 
-            char* dev = safe_xstrcpy(arg, -1);
-            char* linestr = strchr(dev, ':');
+            //char* dev = safe_xstrcpy(arg, -1);
+            char* linestr = strchr(arg, ':');
             if (linestr != NULL) {
 
                 //tty:
@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
 
             //right - we've got the serial port details - store them...
 
-            serline = ser_add_line(dev, line, serialmode);
+            serline = ser_add_line(arg, line, serialmode);
             if (serline == NULL) {
                 loggerf(LOGGER_NOTE, "Error: failed to attach to serial line '%s'\n", arg);
             }
