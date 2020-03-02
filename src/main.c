@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/types.h>
 #include <signal.h>
 
 #if defined(ENABLE_SCHED)
@@ -38,6 +37,7 @@
 #if defined(ENABLE_MLOCKALL)
 
     #include <sys/mman.h>
+    #include <stdint.h>
 
 #endif
 
@@ -64,7 +64,7 @@ typedef struct {
 #define    MAX_CLOCKS        (16)
 serClockT clocklist[MAX_CLOCKS];
 
-void start_clocks(serDevT* serdev);
+_Noreturn void start_clocks(serDevT* serdev);
 
 void set_real_time(void) {
     #ifdef ENABLE_SCHED
@@ -146,7 +146,7 @@ void usage(void) {
            "  (GPIO support is not available in this build)\n"
            #endif // !ENABLE_GPIO
            #ifdef ENABLE_GPIO_CHARDEV
-           "   -s gpio_char: use /dev/gpiochipX/Y for specifying the pin\n" // TODO:
+           "   -s gpio_char: use /dev/gpiochipX/Y for specifying the pin\n"
            "         setup \"edges\" to \"both\", uses poll() for GPIO pin interrupts\n"
            #else // !ENABLE_GPIO_CHARDEV
            "  (chardev GPIO support is not available in this build)\n"
@@ -346,7 +346,6 @@ int main(int argc, char** argv) {
                 clocklist[shmunit].clock = clock;
 
                 loggerf(LOGGER_INFO, "Added clock unit %d on line '%s'\n", shmunit, arg);
-
                 shmunit++;
             }
         }
@@ -422,7 +421,7 @@ int main(int argc, char** argv) {
 
     start_clocks(devfirst);
 
-    loggerf(LOGGER_INFO, "parent process terminated\n");
+    loggerf(LOGGER_INFO, "Parent process has been terminated\n");
     exit(1);
 
     return 0;    //to stop warnings
@@ -430,11 +429,11 @@ int main(int argc, char** argv) {
 
 void start_clocks(serDevT* serdev) {
     serLineT* serline;
-    int c;
-    if (serdev == NULL) {
-        loggerf(LOGGER_INFO, "The clock input device doesn't exist\n");
+    if (serdev == NULL || strlen(serdev->dev) <= 0) {
+        //loggerf(LOGGER_INFO, "The clock input device doesn't exist\n");
         return;
     }
+
     loggerf(LOGGER_INFO, "Pid %d for device %s\n", getpid(), serdev->dev);
 
     if (ser_init_hardware(serdev) < 0) {
@@ -452,13 +451,11 @@ void start_clocks(serDevT* serdev) {
 
         serline = NULL;
         while ((serline = ser_get_line(serline)) != NULL) {
-            for (c = 0; c < MAX_CLOCKS; c++) {
+            for (uint_fast8_t c = 0; c < MAX_CLOCKS; c++) {
                 if ((serline->dev == serdev) && (clocklist[c].serline == serline)) {
                     clk_process_status_change(clocklist[c].clock, serline->curstate, serline->eventtime);
-
                 }
             }
         }
-
     }
 }

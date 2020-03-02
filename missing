@@ -317,7 +317,7 @@ WARNING: \`$1' is missing on your system.  You should only need it if
     echo 1>&2 "\
 WARNING: I can't seem to be able to run \`tar' with the given arguments.
          You may want to install GNU tar or Free paxutils, or check the
-         command line arguments."
+         command gpiod_line arguments."
     exit 1
     ;;
 

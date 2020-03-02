@@ -20,9 +20,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -45,17 +42,17 @@ void logger_syslog(int flag, int level) {
 }
 
 void loggerf(int level, char* format, ...) {
-    char buf[512];
-    va_list ap;
+    char buffer[512] = {};
+    va_list args;
     static char syslogline[512];
 
     if (format) {
-        va_start (ap, format);
-        vsnprintf(buf, sizeof(buf), format, ap);
-        va_end (ap);
+        va_start(args, format);
+        vsnprintf(buffer, sizeof(buffer), format, args);
+        va_end(args);
 
         if (logf_file && level <= logf_file_level) {
-            fprintf(logf_file, "%s", buf);
+            fprintf(logf_file, "%s", buffer);
             fflush(logf_file);
         }
 
@@ -63,12 +60,12 @@ void loggerf(int level, char* format, ...) {
             //some (all?) syslog()s output strings without '\n' in them as a line anyway - so buffer it here...
 
             //if we have a lot, send it out anyway...
-            if (strlen(syslogline) + strlen(buf) >= sizeof(syslogline)) {
+            if (strlen(syslogline) + strlen(buffer) >= sizeof(syslogline)) {
                 syslog(LOG_NOTICE, "%s", syslogline);
                 syslogline[0] = 0;
             }
 
-            strcat(syslogline, buf);
+            strcat(syslogline, buffer);
 
             if (syslogline[0] != 0 && syslogline[strlen(syslogline) - 1] == '\n') {
                 syslog(LOG_NOTICE, "%s", syslogline);

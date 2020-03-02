@@ -68,7 +68,7 @@ static serLineT* serLineHead;
     return 0;
 }*/
 
-serLineT* ser_add_line(char* dev, int line, int mode) {
+serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
     char fulldev[MAX_DEVICE_NAME_LENGTH];
     serDevT* serdev;
     serLineT* serline;
@@ -99,6 +99,7 @@ serLineT* ser_add_line(char* dev, int line, int mode) {
     if (serDevHead == NULL) {
         serDevHead = safe_mallocz(sizeof(serDevT));
     }
+
     serdev = serDevHead;
     while (serdev != NULL) {
         if (strcmp(serdev->dev, fulldev) == 0) {
@@ -109,7 +110,7 @@ serLineT* ser_add_line(char* dev, int line, int mode) {
     if (serdev == NULL) {
         //no existing device - create a new one..
         serdev = safe_mallocz(sizeof(serDevT));
-        serdev->next = serDevHead;
+        serdev->next = NULL; // There isn't a next one in the list if serDevHead is NULL
         serDevHead = serdev;
 
         strcpy(serdev->dev, fulldev);
@@ -117,7 +118,9 @@ serLineT* ser_add_line(char* dev, int line, int mode) {
         serdev->modemlines = 0;
         serdev->fd = -1;
         if (serdev->mode == SERPORT_MODE_GPIO_CHAR) {
-            char* subs = strtok(serdev->dev, "/");
+            char* tmp = malloc(strlen(serdev->dev) + 1);
+            strcpy(tmp, serdev->dev);
+            char* subs = strtok(tmp, "/");
             while (subs != NULL) {
                 if (subs[0] == 'd' &&
                     subs[1] == 'e' &&
@@ -130,7 +133,7 @@ serLineT* ser_add_line(char* dev, int line, int mode) {
                            subs[4] == 'c' &&
                            subs[5] == 'h') {
                     // This is the gpiochip part
-                    serdev->chipname = safe_mallocz(strlen(subs));
+                    serdev->chipname = safe_mallocz(strlen(subs) + 1);
                     strcpy(serdev->chipname, subs);
                     loggerf(LOGGER_INFO, "Using chip \"%s\"\n", subs);
                 } else if (isdigit(subs[0])) {
@@ -164,7 +167,6 @@ serLineT* ser_add_line(char* dev, int line, int mode) {
     }
 
     //ok - we've got a valid device/line/mode combo...
-
     serdev->modemlines |= line;
 
     //create a new line entry...
@@ -248,23 +250,25 @@ int ser_open_dev(serDevT* dev) {
         }
             #endif
             #if defined(ENABLE_GPIO_CHARDEV)
-        case ENABLE_GPIO_CHARDEV: {
+        case SERPORT_MODE_GPIO_CHAR: {
             dev->gpiod_chip = gpiod_chip_open_by_name(dev->chipname);
             if (!dev->gpiod_chip) {
-                perror("Open chip failed\n");
+                loggerf(LOGGER_INFO,"Opening chip failed\n");
                 return -1;
             }
 
-            dev->line = gpiod_chip_get_line(dev->gpiod_chip, dev->pin_number);
-            if (!dev->line) {
-                perror("Get line failed\n");
+            dev->gpiod_line = gpiod_chip_get_line(dev->gpiod_chip, dev->pin_number);
+            if (!dev->gpiod_line) {
+                loggerf(LOGGER_INFO,"Get line failed\n");
                 return -1;
             }
 
-            if (gpiod_line_request_both_edges_events_flags(dev->line, "Consumer", GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW) < 0) {
-                perror("Request event notification failed\n");
+            if (gpiod_line_request_both_edges_events_flags(dev->gpiod_line, "Consumer", GPIOD_LINE_REQUEST_FLAG_ACTIVE_LOW) < 0) {
+                loggerf(LOGGER_INFO,"Request event notification failed\n");
                 return -1;
             }
+
+            dev->fd = 1; // So that dumb checks will succeed, nothing should be using this _really_ // TODO: Improve
             break;
         }
             #endif
@@ -293,12 +297,9 @@ int ser_init_hardware(serDevT* dev) {
 //static jmp_buf alrmjump;
 
 #ifdef ENABLE_TIOCMIWAIT
-    #pragma ide diagnostic ignored "UnusedLocalVariable"
-
-static void sigalrm(int sig) {
+static void sigalrm(int _ignore) {
     //empty func - just used so that ioctl() aborts on an alarm()
 }
-
 #endif
 
 #if defined(ENABLE_GPIO_CHARDEV)
@@ -487,7 +488,7 @@ int ser_get_dev_status_lines(serDevT* dev, time_f timef) {
         #endif // !defined(ENABLE_GPIO)
     if (dev->mode == SERPORT_MODE_GPIO_CHAR) {
         // Read the GPIO pin
-        uint_fast8_t return_code = gpiod_line_event_read(dev->line, dev->event);
+        uint_fast8_t return_code = gpiod_line_event_read(dev->gpiod_line, dev->event);
         loggerf(LOGGER_NOTE, "Get event notification on line #%u\n", dev->pin_number);
         if (return_code < 0) {
             loggerf(LOGGER_NOTE, "Read last event notification failed\n");

@@ -13,10 +13,9 @@
 #endif
 
 
-//a serial device (serDevT) is an individual serial port, with several status control lines
-//a modem status line (serLineT) is an individual status line on a serial port
-
+/** a serial device (serDevT) is an individual serial port, with several status control lines */
 typedef struct serDevS serDevT;
+/** a modem status line (serLineT) is an individual status line on a serial port */
 typedef struct serLineS serLineT;
 
 #define MAX_DEVICE_NAME_LENGTH 128
@@ -49,10 +48,10 @@ struct serDevS {
 
     #ifdef ENABLE_GPIO_CHARDEV
     char* chipname;
-    unsigned int pin_number;    // GPIO Pin #2
+    uint_fast8_t pin_number;    // GPIO Pin #2
     struct gpiod_line_event* event;
     struct gpiod_chip* gpiod_chip;
-    struct gpiod_line* line;
+    struct gpiod_line* gpiod_line;
     #endif
 
     /** the current and previous modem lines active - some of modemlines */
@@ -76,7 +75,7 @@ struct serLineS {
 
 //int ser_init(void);
 
-serLineT* ser_add_line(char* dev, int line, int mode);
+serLineT* ser_add_line(char* dev, unsigned int line, int mode);
 
 //pass in NULL to get the first dev/line
 //pass in dev/line to get next dev/line
