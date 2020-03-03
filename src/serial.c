@@ -129,7 +129,7 @@ serLineT* ser_add_line(char* dev, unsigned int line, int mode) {
                            subs[3] == 'o' &&
                            subs[4] == 'c' &&
                            subs[5] == 'h') {
-                    // This is the gpiochip part
+                    // This is the gpiochip part of the path
                     serdev->chipname = safe_mallocz(strlen(subs) + 1);
                     strcpy(serdev->chipname, subs);
                     loggerf(LOGGER_INFO, "Using chip \"%s\"\n", subs);

@@ -3,5 +3,6 @@ cmake-build-debug
 .deps
 
 stamp-h1
+radioclkd2
 
 userconfig.h
