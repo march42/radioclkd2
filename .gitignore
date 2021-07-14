@@ -1,0 +1,11 @@
+# binaries
+/radioclkd2
+
+# build files
+Makefile
+autoconf.h
+config.log
+config.status
+*.o
+.deps/
+stamp-h1
